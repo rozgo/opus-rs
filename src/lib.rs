@@ -740,6 +740,12 @@ pub struct Error {
 }
 
 impl Error {
+
+	/// New Opus error
+	pub fn new(function : &'static str, code : ErrorCode) -> Error {
+		Error { function: function, code: code }
+	}
+
 	fn bad_arg(what: &'static str) -> Error {
 		Error { function: what, code: ErrorCode::BadArg }
 	}
