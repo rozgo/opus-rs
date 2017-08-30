@@ -367,6 +367,8 @@ pub struct Decoder {
 	channels: Channels,
 }
 
+unsafe impl Send for Decoder {}
+
 impl Decoder {
 	/// Create and initialize a decoder.
 	pub fn new(sample_rate: u32, channels: Channels) -> Result<Decoder> {

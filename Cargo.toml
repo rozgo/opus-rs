@@ -14,5 +14,7 @@ repository = "https://github.com/SpaceManiac/opus-rs"
 documentation = "https://wombat.platymuus.com/rustdoc/opus_0.2.0/"
 
 [dependencies]
-opus-sys = "0.2.0"
+#opus-sys = "0.2.0"
+#opus-sys = { path = "../rust-opus/opus-sys" }
+opus-sys = { git = "https://github.com/rozgo/rust-opus.git", branch = "windows_vs" }
 libc = "0.2"
