@@ -31,6 +31,10 @@ const OPUS_GET_SAMPLE_RATE: c_int = 4029; // out *i32
 // Encoder CTLs
 const OPUS_SET_BITRATE: c_int = 4002; // in i32
 const OPUS_GET_BITRATE: c_int = 4003; // out *i32
+const OPUS_SET_VBR: c_int = 4006; // in i32
+const OPUS_GET_VBR: c_int = 4007; // out *i32
+const OPUS_SET_VBR_CONSTRAINT: c_int = 4020; // in i32
+const OPUS_GET_VBR_CONSTRAINT: c_int = 4021; // out *i32
 const OPUS_SET_INBAND_FEC: c_int = 4012; // in i32
 const OPUS_GET_INBAND_FEC: c_int = 4013; // out *i32
 const OPUS_SET_PACKET_LOSS_PERC: c_int = 4014; // in i32
@@ -201,6 +205,7 @@ macro_rules! enc_ctl {
 }
 
 /// An Opus encoder with associated state.
+#[derive(Debug)]
 pub struct Encoder {
 	ptr: *mut ffi::OpusEncoder,
 	channels: Channels,
@@ -309,6 +314,34 @@ impl Encoder {
 		})
 	}
 
+	/// Enable or disable variable bitrate.
+	pub fn set_vbr(&mut self, vbr: bool) -> Result<()> {
+		let value: i32 = if vbr { 1 } else { 0 };
+		enc_ctl!(self, OPUS_SET_VBR, value);
+		Ok(())
+	}
+
+	/// Determine if variable bitrate is enabled.
+	pub fn get_vbr(&mut self) -> Result<bool> {
+		let mut value: i32 = 0;
+		enc_ctl!(self, OPUS_GET_VBR, &mut value);
+		Ok(value != 0)
+	}
+
+	/// Enable or disable constrained VBR.
+	pub fn set_vbr_constraint(&mut self, vbr: bool) -> Result<()> {
+		let value: i32 = if vbr { 1 } else { 0 };
+		enc_ctl!(self, OPUS_SET_VBR_CONSTRAINT, value);
+		Ok(())
+	}
+
+	/// Determine if constrained VBR is enabled.
+	pub fn get_vbr_constraint(&mut self) -> Result<bool> {
+		let mut value: i32 = 0;
+		enc_ctl!(self, OPUS_GET_VBR_CONSTRAINT, &mut value);
+		Ok(value != 0)
+	}
+
 	/// Configures the encoder's use of inband forward error correction (FEC).
 	pub fn set_inband_fec(&mut self, value: bool) -> Result<()> {
 		let value: i32 = if value { 1 } else { 0 };
@@ -362,6 +395,7 @@ macro_rules! dec_ctl {
 }
 
 /// An Opus decoder with associated state.
+#[derive(Debug)]
 pub struct Decoder {
 	ptr: *mut ffi::OpusDecoder,
 	channels: Channels,
@@ -575,6 +609,7 @@ pub mod packet {
 	}
 
 	/// A parsed Opus packet, retuned from `parse`.
+	#[derive(Debug)]
 	pub struct Packet<'a> {
 		/// The TOC byte of the packet.
 		pub toc: u8,
@@ -606,6 +641,7 @@ pub mod packet {
 // Float Soft Clipping
 
 /// Soft-clipping to bring a float signal within the [-1,1] range.
+#[derive(Debug)]
 pub struct SoftClip {
 	channels: Channels,
 	memory: [f32; 2],
@@ -631,6 +667,7 @@ impl SoftClip {
 // Repacketizer
 
 /// A repacketizer used to merge together or split apart multiple Opus packets.
+#[derive(Debug)]
 pub struct Repacketizer {
 	ptr: *mut ffi::OpusRepacketizer,
 }
@@ -675,6 +712,7 @@ impl Drop for Repacketizer {
 // but a real Vec<&'buf [u8]> rather than unsafe blocks may be substituted.
 
 /// An in-progress repacketization.
+#[derive(Debug)]
 pub struct RepacketizerState<'rp, 'buf> {
 	rp: &'rp mut Repacketizer,
 	phantom: PhantomData<&'buf [u8]>,
